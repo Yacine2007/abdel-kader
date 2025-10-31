@@ -187,14 +187,6 @@
             margin-bottom: 15px;
         }
 
-        .international-work {
-            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid var(--secondary-color);
-            margin-top: 15px;
-        }
-
         .skills {
             display: flex;
             flex-wrap: wrap;
@@ -380,6 +372,28 @@
             border: 2px solid #ffc107;
         }
 
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .contact-ref {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .company-description {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+            margin-top: 15px;
+            font-weight: 600;
+        }
+
         /* Animation */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
@@ -448,6 +462,10 @@
             
             .partners {
                 justify-content: center;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -526,7 +544,7 @@
                     </div>
                     <div class="name-title">
                         <h1>ABDEL KADER BEN MOKRANE</h1>
-                        <h2>Électricien du bâtiment professionnel</h2>
+                        <h2>Entrepreneur en électricité architecturale</h2>
                     </div>
                 </div>
                 <div class="contact-info">
@@ -563,10 +581,8 @@
                             <img src="https://github.com/Yacine2007/abdel-kader/blob/main/abk.jpg?raw=true" alt="Photo personnelle de Abdel Kader Ben Mokrane">
                         </div>
                         <div class="profile-text">
-                            <p>Électricien professionnel spécialisé dans l'installation des réseaux électriques pour bâtiments, caméras de surveillance, systèmes d'alarme et réseaux internet.</p>
-                            
-                            <div class="international-work">
-                                <p><strong>Capacité à travailler dans des zones géographiques importantes comme la France avec des entreprises et institutions.</strong></p>
+                            <div class="company-description">
+                                Une entreprise de travaux publics spécialisée dans les travaux électriques architecturaux, l'installation de caméras de surveillance, de systèmes d'alarme et de réseaux internet.
                             </div>
                         </div>
                     </div>
@@ -576,8 +592,7 @@
                     <h2 class="section-title"><i class="fas fa-graduation-cap"></i> FORMATION</h2>
                     <div class="info-item">
                         <h3>Diplôme Universitaire</h3>
-                        <p>Génie Mécanique - Réparation des moteurs de navires</p>
-                        <p>Spécialisation en mécanique navale</p>
+                        <p>Génie Mécanique - Spécialisation en installation électrique pour bateaux</p>
                     </div>
                     <div class="info-item">
                         <h3>Baccalauréat Technique</h3>
@@ -612,17 +627,6 @@
                     </div>
                     <div class="level-bar">
                         <div class="level-fill" style="width: 60%"></div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <h2 class="section-title"><i class="fas fa-certificate"></i> CERTIFICATS</h2>
-                    <div class="info-item">
-                        <h3>Baccalauréat Technique</h3>
-                        <p>Juin 1994 - Spécialité Mécanique</p>
-                        <div class="excellence-badge">
-                            Mention Excellent - Classé national
-                        </div>
                     </div>
                 </div>
 
@@ -665,18 +669,17 @@
                 <div class="section">
                     <h2 class="section-title"><i class="fas fa-briefcase"></i> EXPÉRIENCE PROFESSIONNELLE</h2>
                     <div class="experience-item">
-                        <div class="exp-title">Électricien du bâtiment indépendant</div>
-                        <div class="exp-date">Beni Saf et région</div>
+                        <div class="exp-title">Entrepreneur en électricité</div>
                         <div class="exp-description">
-                            <p>Spécialisé dans l'installation des réseaux électriques pour bâtiments résidentiels et commerciaux, systèmes de caméras de surveillance, alarmes et réseaux internet.</p>
+                            <p>Spécialisé dans les travaux électriques architecturaux, l'installation de caméras de surveillance, de systèmes d'alarme et de réseaux internet.</p>
                         </div>
                     </div>
                     
                     <div class="experience-item">
                         <div class="exp-title">Expérience universitaire - ECORAP</div>
-                        <div class="exp-date">Période universitaire - Beni Saf</div>
+                        <div class="exp-date">Période universitaire</div>
                         <div class="exp-description">
-                            <p>Application pratique du spécialité Génie Mécanique dans le domaine de la réparation des moteurs de navires.</p>
+                            <p>Application pratique de la spécialité Génie Mécanique dans le domaine de l'installation électrique pour bateaux.</p>
                         </div>
                     </div>
                 </div>
@@ -687,7 +690,7 @@
                         <p>Expérience de collaboration avec des entreprises leaders dans le domaine de l'électricité :</p>
                         <div class="partners">
                             <div class="partner-item">Legrand</div>
-                            <div class="partner-item">Gamix</div>
+                            <div class="partner-item">Gaimex</div>
                             <div class="partner-item">Schneider Electric</div>
                         </div>
                     </div>
@@ -696,8 +699,8 @@
                 <div class="section">
                     <h2 class="section-title"><i class="fas fa-cogs"></i> COMPÉTENCES PROFESSIONNELLES</h2>
                     <div class="skills">
-                        <div class="skill">Installation réseaux électriques</div>
-                        <div class="skill">Caméras de surveillance</div>
+                        <div class="skill">Travaux électriques architecturaux</div>
+                        <div class="skill">Installation caméras de surveillance</div>
                         <div class="skill">Systèmes d'alarme</div>
                         <div class="skill">Réseaux internet</div>
                         <div class="skill">Électricité domestique</div>
@@ -731,11 +734,9 @@
 
                 <div class="section">
                     <h2 class="section-title"><i class="fas fa-link"></i> RÉFÉRENCES</h2>
-                    <div class="info-item">
-                        <h3>Électricien professionnel</h3>
-                        <p>Installation réseaux électriques, caméras surveillance et alarmes</p>
-                        <p>Téléphone: 0668714127</p>
-                        <p>Email: bypro2023@outlook.com</p>
+                    <div class="contact-ref">
+                        <p><strong>Téléphone:</strong> 0668714127</p>
+                        <p><strong>Email:</strong> bypro2023@outlook.com</p>
                     </div>
                 </div>
 
