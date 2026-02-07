@@ -1,0 +1,2102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panneau de contrôle - Inventaire électrique</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #0d47a1;
+            --secondary: #f5f5f5;
+            --white: #ffffff;
+            --text-dark: #333333;
+            --text-light: #666666;
+            --border: #e0e0e0;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --sidebar-width: 260px;
+            --search-bg: #fff3e0;
+            --search-border: #ff9800;
+            --highlight-bg: #fff9c4;
+            --match-highlight: rgba(255, 235, 59, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            color: var(--text-dark);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Mobile Header */
+        .mobile-header {
+            display: none;
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1001;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .mobile-header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .mobile-menu-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mobile-logo {
+            width: 35px;
+            height: 35px;
+            border-radius: 6px;
+            object-fit: cover;
+            background-color: white;
+            padding: 2px;
+        }
+
+        .mobile-header-text h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .mobile-header-text p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        /* Sidebar - Mobile Optimized */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--white);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            left: -100%;
+            transition: left 0.3s ease;
+            top: 0;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            background-color: var(--primary);
+            color: white;
+            min-height: 80px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            margin-right: 10px;
+            object-fit: cover;
+            background-color: white;
+            padding: 2px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-text h1 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .header-text p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .menu-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(26, 115, 232, 0.08);
+            border-left-color: var(--primary);
+        }
+
+        .menu-item.active {
+            background-color: rgba(26, 115, 232, 0.1);
+            border-left-color: var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .menu-item i {
+            width: 24px;
+            margin-right: 12px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Main content - FIXED FOR DESKTOP */
+        .main-content {
+            padding: 20px;
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Desktop optimization */
+        @media (min-width: 769px) {
+            .mobile-header {
+                display: none;
+            }
+            
+            .sidebar {
+                left: 0;
+                width: var(--sidebar-width);
+            }
+            
+            .main-content {
+                margin-left: var(--sidebar-width);
+                padding: 30px;
+                max-width: calc(100vw - var(--sidebar-width));
+                overflow-x: hidden;
+            }
+            
+            .sidebar-overlay {
+                display: none !important;
+            }
+            
+            .page-content {
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .header h2 {
+            color: var(--primary);
+            font-size: 28px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        /* Search bar */
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: var(--search-bg);
+            border-radius: 8px;
+            padding: 12px 20px;
+            box-shadow: 0 4px 8px rgba(255, 152, 0, 0.2);
+            width: 100%;
+            margin: 0 auto 20px auto;
+            border: 2px solid var(--search-border);
+        }
+
+        .search-container i {
+            color: var(--warning);
+            margin-right: 15px;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .search-input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 16px;
+            color: var(--text-dark);
+            background: transparent;
+            font-weight: 500;
+        }
+
+        .search-input::placeholder {
+            color: #ff9800;
+            opacity: 0.8;
+        }
+
+        /* Filter toggle button for mobile */
+        .filter-toggle-container {
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .filter-toggle-btn {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .filter-toggle-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .filter-toggle-btn i {
+            transition: transform 0.3s;
+        }
+
+        .filter-toggle-btn.active i {
+            transform: rotate(180deg);
+        }
+
+        /* Filters container - Optimized */
+        .filters-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            background: var(--white);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .filters-container.collapsed {
+            display: none;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .filter-select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            background-color: white;
+            cursor: pointer;
+            width: 100%;
+            transition: border 0.3s;
+        }
+
+        .filter-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
+        /* Reset filters button */
+        .reset-filters {
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .reset-btn {
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-dark);
+            transition: all 0.2s;
+            height: 42px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .reset-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Table - Optimized for all devices */
+        .table-container {
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 30px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .highlighted {
+            background-color: var(--highlight-bg) !important;
+        }
+
+        .price {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: nowrap;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            min-width: 40px;
+            justify-content: center;
+        }
+
+        .edit-btn {
+            background-color: rgba(26, 115, 232, 0.1);
+            color: var(--primary);
+        }
+
+        .edit-btn:hover {
+            background-color: rgba(26, 115, 232, 0.2);
+        }
+
+        .delete-btn {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--danger);
+        }
+
+        .delete-btn:hover {
+            background-color: rgba(244, 67, 54, 0.2);
+        }
+
+        .copy-btn {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+        }
+
+        .copy-btn:hover {
+            background-color: rgba(76, 175, 80, 0.2);
+        }
+
+        .highlight-btn {
+            background-color: rgba(255, 152, 0, 0.1);
+            color: var(--warning);
+        }
+
+        .highlight-btn:hover {
+            background-color: rgba(255, 152, 0, 0.2);
+        }
+
+        /* Match highlighting */
+        .match {
+            background-color: var(--match-highlight);
+            border-radius: 2px;
+            padding: 0 1px;
+            font-weight: 600;
+        }
+
+        /* Form styles */
+        .form-container {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border 0.3s;
+            -webkit-appearance: none;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: var(--text-dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Statistics */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-top: 4px solid var(--primary);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-details {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: 8px;
+        }
+
+        .brand-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .brand-card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .brand-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-name {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .brand-count {
+            background-color: var(--primary);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 60px;
+            margin-bottom: 20px;
+            color: #e0e0e0;
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            max-width: 400px;
+            margin: 0 auto 25px;
+            line-height: 1.5;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+
+        .notification.success {
+            background-color: var(--success);
+        }
+
+        .notification.error {
+            background-color: var(--danger);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading indicator */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .mobile-header {
+                display: block;
+            }
+            
+            .main-content {
+                padding: 15px;
+                padding-top: 80px;
+            }
+            
+            .header {
+                margin-bottom: 20px;
+            }
+            
+            .header h2 {
+                font-size: 24px;
+                text-align: center;
+                margin-bottom: 15px;
+            }
+            
+            .search-container {
+                margin-bottom: 15px;
+                padding: 10px 15px;
+            }
+            
+            /* Filter toggle for mobile */
+            .filter-toggle-container {
+                display: block;
+            }
+            
+            .filters-container {
+                flex-direction: column;
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .filter-group {
+                min-width: 100%;
+            }
+            
+            /* Table adjustments */
+            .table-container {
+                margin-bottom: 20px;
+            }
+            
+            table {
+                min-width: 700px;
+            }
+            
+            th, td {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+            
+            .actions {
+                gap: 4px;
+            }
+            
+            .action-btn {
+                padding: 6px 8px;
+                font-size: 12px;
+                min-width: 36px;
+            }
+            
+            .action-btn span {
+                display: none;
+            }
+            
+            .action-btn i {
+                margin: 0;
+            }
+            
+            /* Form adjustments */
+            .form-container {
+                padding: 20px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 14px;
+            }
+            
+            /* Statistics adjustments */
+            .stats-container {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+            }
+            
+            .stat-card {
+                padding: 20px;
+            }
+            
+            .stat-value {
+                font-size: 26px;
+            }
+            
+            .brand-stats {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .brand-card {
+                padding: 20px;
+            }
+            
+            /* Notification */
+            .notification {
+                left: 15px;
+                right: 15px;
+                bottom: 15px;
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 10px;
+                padding-top: 70px;
+            }
+            
+            .header h2 {
+                font-size: 22px;
+            }
+            
+            .form-container {
+                padding: 15px;
+            }
+            
+            .form-row {
+                gap: 0;
+            }
+            
+            .form-row .form-group {
+                min-width: 100%;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-container {
+                border-radius: 6px;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <div class="mobile-header-content">
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="mobile-logo-container">
+                <img src="https://yacne.github.io/abdel-kader/logo.png" alt="Logo" class="mobile-logo">
+                <div class="mobile-header-text">
+                    <h1>Panneau de contrôle</h1>
+                    <p>Abdel kader Ben mokrane</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="https://yacne.github.io/abdel-kader/logo.png" alt="Logo" class="logo">
+            <div class="header-text">
+                <h1>Panneau de contrôle</h1>
+                <p>Abdel kader Ben mokrane</p>
+            </div>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-item active" data-page="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Tableau de bord</span>
+            </div>
+            <div class="menu-item" data-page="add">
+                <i class="fas fa-plus-circle"></i>
+                <span>Ajouter un produit</span>
+            </div>
+            <div class="menu-item" data-page="edit">
+                <i class="fas fa-edit"></i>
+                <span>Modifier un produit</span>
+            </div>
+            <div class="menu-item" data-page="stats">
+                <i class="fas fa-chart-bar"></i>
+                <span>Statistiques</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content" id="mainContent">
+        <div class="page-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <div class="header">
+                    <h2>Inventaire des produits électriques</h2>
+                </div>
+
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Rechercher par nom, référence, marque, catégorie...">
+                </div>
+
+                <!-- Filter toggle for mobile -->
+                <div class="filter-toggle-container">
+                    <button class="filter-toggle-btn" id="filterToggleBtn">
+                        <i class="fas fa-filter"></i>
+                        <span>Filtres</span>
+                    </button>
+                </div>
+
+                <!-- Filters container -->
+                <div class="filters-container" id="filtersContainer">
+                    <div class="filter-group">
+                        <label class="filter-label">Filtrer par référence</label>
+                        <select class="filter-select" id="refFilter">
+                            <option value="">Toutes les références</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Filtrer par marque</label>
+                        <select class="filter-select" id="brandFilter">
+                            <option value="">Toutes les marques</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Filtrer par catégorie</label>
+                        <select class="filter-select" id="categoryFilter">
+                            <option value="">Toutes les catégories</option>
+                        </select>
+                    </div>
+                    <div class="filter-group reset-filters">
+                        <button class="reset-btn" id="resetFilters">
+                            <i class="fas fa-redo"></i>
+                            Réinitialiser
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="productsTable">
+                        <thead>
+                            <tr>
+                                <th>Réf.</th>
+                                <th>Nom</th>
+                                <th>Marque</th>
+                                <th>Catégorie</th>
+                                <th>Qté</th>
+                                <th>Prix (Da)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Products will be loaded here -->
+                        </tbody>
+                    </table>
+                    <div id="emptyTable" class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h3>Chargement des données...</h3>
+                        <p>Veuillez patienter pendant le chargement</p>
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Product Page -->
+            <div id="add" class="page">
+                <div class="header">
+                    <h2>Ajouter un nouveau produit</h2>
+                    <button class="btn btn-secondary back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Retour</span>
+                    </button>
+                </div>
+
+                <div class="form-container">
+                    <form id="addProductForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Référence *</label>
+                                <input type="text" class="form-input" id="addRef" name="ref" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nom du produit *</label>
+                                <input type="text" class="form-input" id="addName" name="name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Marque *</label>
+                                <input type="text" class="form-input" id="addBrand" name="brand" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Catégorie *</label>
+                                <input type="text" class="form-input" id="addCategory" name="category" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Quantité *</label>
+                                <input type="number" class="form-input" id="addQuantity" name="quantity" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Prix (Da) *</label>
+                                <input type="number" class="form-input" id="addPrice" name="price" step="0.01" min="0" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-textarea" id="addDescription" name="description" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="reset" class="btn btn-secondary">
+                                <i class="fas fa-eraser"></i>
+                                <span>Effacer</span>
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i>
+                                <span>Ajouter le produit</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Edit Product Page -->
+            <div id="edit" class="page">
+                <div class="header">
+                    <h2>Modifier un produit</h2>
+                    <button class="btn btn-secondary back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Retour</span>
+                    </button>
+                </div>
+
+                <div class="form-container">
+                    <div class="empty-state" id="emptyEditState">
+                        <i class="fas fa-edit"></i>
+                        <h3>Sélectionnez un produit à modifier</h3>
+                        <p>Retournez au tableau de bord et cliquez sur "Modifier" pour sélectionner un produit</p>
+                    </div>
+
+                    <form id="editProductForm" style="display: none;">
+                        <input type="hidden" id="editId" name="id">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Référence *</label>
+                                <input type="text" class="form-input" id="editRef" name="ref" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nom du produit *</label>
+                                <input type="text" class="form-input" id="editName" name="name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Marque *</label>
+                                <input type="text" class="form-input" id="editBrand" name="brand" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Catégorie *</label>
+                                <input type="text" class="form-input" id="editCategory" name="category" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Quantité *</label>
+                                <input type="number" class="form-input" id="editQuantity" name="quantity" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Prix (Da) *</label>
+                                <input type="number" class="form-input" id="editPrice" name="price" step="0.01" min="0" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-textarea" id="editDescription" name="description" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary back-btn">
+                                <i class="fas fa-times"></i>
+                                <span>Annuler</span>
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                <span>Mettre à jour</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Statistics Page -->
+            <div id="stats" class="page">
+                <div class="header">
+                    <h2>Statistiques de l'inventaire</h2>
+                    <button class="btn btn-secondary back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Retour</span>
+                    </button>
+                </div>
+
+                <div class="stats-container" id="statsContainer">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>Chargement des statistiques...</p>
+                    </div>
+                </div>
+
+                <h3 style="margin: 30px 0 20px; color: var(--primary);">Statistiques par marque</h3>
+                <div class="brand-stats" id="brandStats">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>Chargement des statistiques par marque...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification -->
+    <div class="notification" id="notification" style="display: none;"></div>
+
+    <script>
+        // Configuration GitHub
+        const GITHUB_OWNER = 'Yacine2007';
+        const GITHUB_REPO = 'abdel-kader';
+        const GITHUB_PATH = 'DATA.json';
+        const GITHUB_TOKEN = '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';
+        
+        // URL GitHub
+        const GITHUB_RAW_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${GITHUB_PATH}`;
+        const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
+        
+        // Products array
+        let products = [];
+        
+        // Current filters
+        let currentFilters = {
+            search: '',
+            ref: '',
+            brand: '',
+            category: ''
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initialisation de l\'application...');
+            
+            // Initialize mobile menu
+            initMobileMenu();
+            
+            // Initialize navigation
+            initNavigation();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Initialize filters toggle for mobile
+            initFiltersToggle();
+            
+            // Load data from GitHub
+            loadDataFromGitHub();
+        });
+
+        // Initialize mobile menu
+        function initMobileMenu() {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            // Toggle sidebar on mobile menu button click
+            mobileMenuBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                sidebarOverlay.classList.toggle('active');
+            });
+            
+            // Close sidebar on overlay click
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('active');
+            });
+            
+            // Close sidebar on menu item click (mobile)
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    if (window.innerWidth < 769) {
+                        sidebar.classList.remove('open');
+                        sidebarOverlay.classList.remove('active');
+                    }
+                });
+            });
+        }
+
+        // Initialize filters toggle for mobile
+        function initFiltersToggle() {
+            const filterToggleBtn = document.getElementById('filterToggleBtn');
+            const filtersContainer = document.getElementById('filtersContainer');
+            
+            if (filterToggleBtn && filtersContainer) {
+                filterToggleBtn.addEventListener('click', function() {
+                    filtersContainer.classList.toggle('collapsed');
+                    this.classList.toggle('active');
+                    
+                    // Update button text
+                    const isCollapsed = filtersContainer.classList.contains('collapsed');
+                    this.querySelector('span').textContent = isCollapsed ? 'Afficher les filtres' : 'Cacher les filtres';
+                });
+            }
+            
+            // Auto-collapse filters on mobile by default
+            if (window.innerWidth < 769) {
+                if (filtersContainer) {
+                    filtersContainer.classList.add('collapsed');
+                }
+            }
+        }
+
+        // Navigation
+        function initNavigation() {
+            const menuItems = document.querySelectorAll('.menu-item');
+            const pages = document.querySelectorAll('.page');
+            const backButtons = document.querySelectorAll('.back-btn');
+
+            // Handle menu item clicks
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Update active menu item
+                    menuItems.forEach(mi => mi.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show selected page
+                    const pageId = this.getAttribute('data-page');
+                    pages.forEach(page => {
+                        page.classList.remove('active');
+                        if (page.id === pageId) {
+                            page.classList.add('active');
+                        }
+                    });
+
+                    // Update content based on page
+                    if (pageId === 'dashboard') {
+                        applyFilters();
+                    } else if (pageId === 'stats') {
+                        updateStatistics();
+                    }
+                });
+            });
+
+            // Handle back buttons
+            backButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelector('.menu-item[data-page="dashboard"]').click();
+                });
+            });
+        }
+
+        // Load data from GitHub
+        async function loadDataFromGitHub() {
+            try {
+                console.log('Chargement des données depuis GitHub...');
+                
+                // Show loading state
+                document.getElementById('emptyTable').innerHTML = `
+                    <i class="fas fa-sync fa-spin"></i>
+                    <h3>Chargement en cours...</h3>
+                    <p>Connexion à GitHub...</p>
+                    <div class="loading-spinner"></div>
+                `;
+                
+                // Try direct fetch first
+                try {
+                    const response = await fetch(GITHUB_RAW_URL + '?t=' + Date.now());
+                    
+                    if (response.ok) {
+                        const text = await response.text();
+                        
+                        if (text.trim() === '') {
+                            console.log('Fichier vide détecté');
+                            products = [];
+                        } else {
+                            try {
+                                products = JSON.parse(text);
+                                console.log(`${products.length} produits chargés`);
+                            } catch (parseError) {
+                                console.error('Erreur de parsing JSON:', parseError);
+                                products = [];
+                            }
+                        }
+                        
+                        updateUIAfterLoad();
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('Méthode directe échouée:', error.message);
+                }
+                
+                // Try GitHub API as fallback
+                try {
+                    const response = await fetch(GITHUB_API_URL, {
+                        headers: {
+                            'Authorization': `token ${GITHUB_TOKEN}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const fileData = await response.json();
+                        const content = atob(fileData.content);
+                        products = JSON.parse(content);
+                        console.log(`${products.length} produits chargés via API`);
+                        
+                        updateUIAfterLoad();
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('API GitHub échouée:', error.message);
+                }
+                
+                // If all methods failed, create empty array
+                console.log('Création d\'un tableau vide');
+                products = [];
+                updateUIAfterLoad();
+                
+            } catch (error) {
+                console.error('Erreur fatale:', error);
+                
+                // Show error state
+                document.getElementById('emptyTable').innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Erreur de connexion</h3>
+                    <p>Impossible de charger les données</p>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-primary" id="retryLoad">
+                            <i class="fas fa-redo"></i>
+                            Réessayer
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById('retryLoad').addEventListener('click', loadDataFromGitHub);
+                
+                showNotification('Erreur de chargement', 'error');
+            }
+        }
+
+        // Update UI after loading data
+        function updateUIAfterLoad() {
+            if (!Array.isArray(products)) {
+                products = [];
+            }
+            
+            // Update UI
+            populateFilters();
+            applyFilters();
+            updateStatistics();
+            
+            // Show success message
+            if (products.length > 0) {
+                showNotification(`${products.length} produits chargés`, 'success');
+            } else {
+                showNotification('Inventaire vide - Ajoutez des produits', 'success');
+            }
+        }
+
+        // Save data to GitHub
+        async function saveDataToGitHub() {
+            try {
+                showNotification('Sauvegarde en cours...', 'success');
+                
+                // Get current file SHA
+                let sha = null;
+                try {
+                    const getResponse = await fetch(GITHUB_API_URL, {
+                        headers: {
+                            'Authorization': `token ${GITHUB_TOKEN}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (getResponse.ok) {
+                        const fileData = await getResponse.json();
+                        sha = fileData.sha;
+                    }
+                } catch (error) {
+                    console.log('Nouveau fichier');
+                }
+                
+                // Prepare content
+                const content = JSON.stringify(products, null, 2);
+                const contentEncoded = btoa(unescape(encodeURIComponent(content)));
+                
+                // Create request body
+                const body = {
+                    message: `Mise à jour - ${new Date().toLocaleString()}`,
+                    content: contentEncoded
+                };
+                
+                if (sha) {
+                    body.sha = sha;
+                }
+                
+                // Save to GitHub
+                const response = await fetch(GITHUB_API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                if (response.ok) {
+                    showNotification('Données sauvegardées!', 'success');
+                    return true;
+                } else {
+                    const errorData = await response.json();
+                    console.error('Erreur GitHub:', errorData);
+                    showNotification('Erreur de sauvegarde', 'error');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Erreur de sauvegarde:', error);
+                showNotification('Erreur de sauvegarde', 'error');
+                return false;
+            }
+        }
+
+        // Populate filters dropdowns
+        function populateFilters() {
+            const refFilter = document.getElementById('refFilter');
+            const brandFilter = document.getElementById('brandFilter');
+            const categoryFilter = document.getElementById('categoryFilter');
+            
+            // Clear existing options except the first one
+            [refFilter, brandFilter, categoryFilter].forEach(select => {
+                if (select) {
+                    while (select.options.length > 1) {
+                        select.remove(1);
+                    }
+                }
+            });
+            
+            // Get unique values from products
+            const refs = [...new Set(products.map(p => p.ref))].sort();
+            const brands = [...new Set(products.map(p => p.brand))].sort();
+            const categories = [...new Set(products.map(p => p.category))].sort();
+            
+            // Populate reference filter
+            refs.forEach(ref => {
+                const option = document.createElement('option');
+                option.value = ref;
+                option.textContent = ref;
+                refFilter.appendChild(option);
+            });
+            
+            // Populate brand filter
+            brands.forEach(brand => {
+                const option = document.createElement('option');
+                option.value = brand;
+                option.textContent = brand;
+                brandFilter.appendChild(option);
+            });
+            
+            // Populate category filter
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        // Highlight text matches
+        function highlightText(text, searchTerm) {
+            if (!searchTerm || !text) return text;
+            
+            const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`(${escapedSearchTerm})`, 'gi');
+            
+            return text.toString().replace(regex, '<span class="match">$1</span>');
+        }
+
+        // Apply all filters
+        function applyFilters() {
+            const tableBody = document.getElementById('tableBody');
+            const emptyTable = document.getElementById('emptyTable');
+            
+            tableBody.innerHTML = '';
+            
+            if (products.length === 0) {
+                emptyTable.style.display = 'block';
+                emptyTable.innerHTML = `
+                    <i class="fas fa-box-open"></i>
+                    <h3>Aucun produit dans l'inventaire</h3>
+                    <p>Commencez par ajouter des produits</p>
+                    <button class="btn btn-primary" onclick="document.querySelector('.menu-item[data-page=\\'add\\']').click()" style="margin-top: 15px;">
+                        <i class="fas fa-plus"></i>
+                        Ajouter un produit
+                    </button>
+                `;
+                return;
+            }
+            
+            // Filter products
+            const filteredProducts = products.filter(product => {
+                const matchesSearch = !currentFilters.search || 
+                    product.ref.toLowerCase().includes(currentFilters.search) ||
+                    product.name.toLowerCase().includes(currentFilters.search) ||
+                    product.brand.toLowerCase().includes(currentFilters.search) ||
+                    product.category.toLowerCase().includes(currentFilters.search);
+                
+                const matchesRef = !currentFilters.ref || product.ref === currentFilters.ref;
+                const matchesBrand = !currentFilters.brand || product.brand === currentFilters.brand;
+                const matchesCategory = !currentFilters.category || product.category === currentFilters.category;
+                
+                return matchesSearch && matchesRef && matchesBrand && matchesCategory;
+            });
+            
+            if (filteredProducts.length === 0) {
+                emptyTable.style.display = 'block';
+                emptyTable.innerHTML = `
+                    <i class="fas fa-search"></i>
+                    <h3>Aucun résultat</h3>
+                    <p>Aucun produit ne correspond aux critères</p>
+                    <button class="btn btn-secondary" onclick="resetFilters()" style="margin-top: 15px;">
+                        <i class="fas fa-redo"></i>
+                        Réinitialiser
+                    </button>
+                `;
+                return;
+            }
+            
+            emptyTable.style.display = 'none';
+            
+            // Render filtered products
+            filteredProducts.forEach(product => {
+                const row = document.createElement('tr');
+                row.dataset.id = product.id;
+                
+                if (product.highlighted) {
+                    row.classList.add('highlighted');
+                }
+                
+                // Highlight search matches
+                const refHTML = highlightText(product.ref, currentFilters.search);
+                const nameHTML = highlightText(product.name, currentFilters.search);
+                const brandHTML = highlightText(product.brand, currentFilters.search);
+                const categoryHTML = highlightText(product.category, currentFilters.search);
+                
+                // Determine button text based on screen size
+                const showButtonText = window.innerWidth > 768;
+                
+                row.innerHTML = `
+                    <td>${refHTML}</td>
+                    <td>${nameHTML}</td>
+                    <td>${brandHTML}</td>
+                    <td>${categoryHTML}</td>
+                    <td>${product.quantity}</td>
+                    <td class="price">${product.price.toFixed(2)} Da</td>
+                    <td>
+                        <div class="actions">
+                            <button class="action-btn edit-btn" data-id="${product.id}" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                                ${showButtonText ? '<span>Modifier</span>' : ''}
+                            </button>
+                            <button class="action-btn delete-btn" data-id="${product.id}" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                                ${showButtonText ? '<span>Supprimer</span>' : ''}
+                            </button>
+                            <button class="action-btn copy-btn" data-id="${product.id}" title="Copier">
+                                <i class="fas fa-copy"></i>
+                                ${showButtonText ? '<span>Copier</span>' : ''}
+                            </button>
+                            <button class="action-btn highlight-btn" data-id="${product.id}" title="Surligner">
+                                <i class="fas fa-highlighter"></i>
+                                ${showButtonText ? '<span>Surligner</span>' : ''}
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Attach event listeners
+            attachTableActions();
+        }
+
+        // Attach event listeners to table action buttons
+        function attachTableActions() {
+            // Edit buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    const product = products.find(p => p.id === productId);
+                    if (product) {
+                        loadProductForEdit(product);
+                    }
+                });
+            });
+
+            // Delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+                        deleteProduct(productId);
+                    }
+                });
+            });
+
+            // Copy buttons
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    const product = products.find(p => p.id === productId);
+                    if (product) {
+                        copyProductInfo(product);
+                    }
+                });
+            });
+
+            // Highlight buttons
+            document.querySelectorAll('.highlight-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    const product = products.find(p => p.id === productId);
+                    if (product) {
+                        toggleHighlightProduct(productId);
+                    }
+                });
+            });
+        }
+
+        // Copy product information as text
+        function copyProductInfo(product) {
+            const text = `📋 FICHE PRODUIT 📋
+Référence: ${product.ref}
+Nom: ${product.name}
+Marque: ${product.brand}
+Catégorie: ${product.category}
+Quantité: ${product.quantity}
+Prix: ${product.price.toFixed(2)} Da
+${product.description ? `Description: ${product.description}` : ''}
+─────────────────────`;
+            
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    showNotification('Informations copiées!', 'success');
+                })
+                .catch(err => {
+                    console.error('Erreur de copie:', err);
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        showNotification('Informations copiées!', 'success');
+                    } catch (e) {
+                        showNotification('Erreur de copie', 'error');
+                    }
+                    document.body.removeChild(textArea);
+                });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search input with debounce
+            let searchTimeout;
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentFilters.search = this.value.toLowerCase();
+                    applyFilters();
+                }, 300);
+            });
+
+            // Filter change listeners
+            document.getElementById('refFilter').addEventListener('change', function() {
+                currentFilters.ref = this.value;
+                applyFilters();
+            });
+
+            document.getElementById('brandFilter').addEventListener('change', function() {
+                currentFilters.brand = this.value;
+                applyFilters();
+            });
+
+            document.getElementById('categoryFilter').addEventListener('change', function() {
+                currentFilters.category = this.value;
+                applyFilters();
+            });
+
+            // Reset filters button
+            document.getElementById('resetFilters').addEventListener('click', function() {
+                resetFilters();
+            });
+
+            // Add product form
+            document.getElementById('addProductForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await addProduct();
+            });
+
+            // Edit product form
+            document.getElementById('editProductForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await updateProduct();
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                applyFilters(); // Update button text on resize
+                
+                // Auto-show filters on desktop, auto-hide on mobile
+                const filtersContainer = document.getElementById('filtersContainer');
+                const filterToggleBtn = document.getElementById('filterToggleBtn');
+                
+                if (window.innerWidth >= 769) {
+                    if (filtersContainer) {
+                        filtersContainer.classList.remove('collapsed');
+                    }
+                    if (filterToggleBtn) {
+                        filterToggleBtn.style.display = 'none';
+                    }
+                } else {
+                    if (filtersContainer && !filtersContainer.classList.contains('collapsed')) {
+                        filtersContainer.classList.add('collapsed');
+                    }
+                    if (filterToggleBtn) {
+                        filterToggleBtn.style.display = 'block';
+                    }
+                }
+            });
+        }
+
+        // Reset all filters
+        function resetFilters() {
+            currentFilters = {
+                search: '',
+                ref: '',
+                brand: '',
+                category: ''
+            };
+            
+            document.getElementById('searchInput').value = '';
+            document.getElementById('refFilter').value = '';
+            document.getElementById('brandFilter').value = '';
+            document.getElementById('categoryFilter').value = '';
+            
+            applyFilters();
+            showNotification('Filtres réinitialisés', 'success');
+        }
+
+        // Add new product
+        async function addProduct() {
+            const form = document.getElementById('addProductForm');
+            const newProduct = {
+                id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
+                ref: document.getElementById('addRef').value,
+                name: document.getElementById('addName').value,
+                brand: document.getElementById('addBrand').value,
+                category: document.getElementById('addCategory').value,
+                quantity: parseInt(document.getElementById('addQuantity').value),
+                price: parseFloat(document.getElementById('addPrice').value),
+                description: document.getElementById('addDescription').value,
+                highlighted: false
+            };
+
+            products.push(newProduct);
+            
+            // Save to GitHub
+            const success = await saveDataToGitHub();
+            
+            if (success) {
+                // Reset form
+                form.reset();
+                
+                // Update UI
+                populateFilters();
+                applyFilters();
+                updateStatistics();
+                
+                // Go back to dashboard
+                document.querySelector('.menu-item[data-page="dashboard"]').click();
+            } else {
+                // Remove the product if save failed
+                products.pop();
+                showNotification('Erreur: produit non ajouté', 'error');
+            }
+        }
+
+        // Load product for editing
+        function loadProductForEdit(product) {
+            document.getElementById('editId').value = product.id;
+            document.getElementById('editRef').value = product.ref;
+            document.getElementById('editName').value = product.name;
+            document.getElementById('editBrand').value = product.brand;
+            document.getElementById('editCategory').value = product.category;
+            document.getElementById('editQuantity').value = product.quantity;
+            document.getElementById('editPrice').value = product.price;
+            document.getElementById('editDescription').value = product.description;
+            
+            // Show edit form and hide empty state
+            document.getElementById('emptyEditState').style.display = 'none';
+            document.getElementById('editProductForm').style.display = 'block';
+            
+            // Go to edit page
+            document.querySelector('.menu-item[data-page="edit"]').click();
+        }
+
+        // Update product
+        async function updateProduct() {
+            const id = parseInt(document.getElementById('editId').value);
+            const productIndex = products.findIndex(p => p.id === id);
+            
+            if (productIndex !== -1) {
+                const oldProduct = {...products[productIndex]};
+                const oldHighlighted = products[productIndex].highlighted || false;
+                
+                products[productIndex] = {
+                    id: id,
+                    ref: document.getElementById('editRef').value,
+                    name: document.getElementById('editName').value,
+                    brand: document.getElementById('editBrand').value,
+                    category: document.getElementById('editCategory').value,
+                    quantity: parseInt(document.getElementById('editQuantity').value),
+                    price: parseFloat(document.getElementById('editPrice').value),
+                    description: document.getElementById('editDescription').value,
+                    highlighted: oldHighlighted
+                };
+                
+                // Save to GitHub
+                const success = await saveDataToGitHub();
+                
+                if (success) {
+                    // Update UI
+                    populateFilters();
+                    applyFilters();
+                    updateStatistics();
+                    
+                    // Go back to dashboard
+                    document.querySelector('.menu-item[data-page="dashboard"]').click();
+                } else {
+                    // Restore old product if save failed
+                    products[productIndex] = oldProduct;
+                    showNotification('Erreur: modifications non sauvegardées', 'error');
+                }
+            }
+        }
+
+        // Delete product
+        async function deleteProduct(id) {
+            const productIndex = products.findIndex(p => p.id === id);
+            if (productIndex === -1) return;
+            
+            const deletedProduct = products[productIndex];
+            products = products.filter(p => p.id !== id);
+            
+            // Save to GitHub
+            const success = await saveDataToGitHub();
+            
+            if (success) {
+                populateFilters();
+                applyFilters();
+                updateStatistics();
+                
+                showNotification('Produit supprimé', 'success');
+            } else {
+                // Restore the product if save failed
+                products.splice(productIndex, 0, deletedProduct);
+                showNotification('Erreur: produit non supprimé', 'error');
+            }
+        }
+
+        // Toggle highlight product
+        async function toggleHighlightProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (product) {
+                const oldHighlighted = product.highlighted;
+                product.highlighted = !product.highlighted;
+                
+                // Save to GitHub
+                const success = await saveDataToGitHub();
+                
+                if (success) {
+                    applyFilters();
+                    
+                    const isHighlighted = product.highlighted;
+                    showNotification(isHighlighted ? 'Produit surligné' : 'Surlignage retiré', 'success');
+                } else {
+                    // Restore old state if save failed
+                    product.highlighted = oldHighlighted;
+                    showNotification('Erreur: surlignage non sauvegardé', 'error');
+                }
+            }
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            // Calculate statistics
+            const totalProducts = products.length;
+            const totalValue = products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+            const totalQuantity = products.reduce((sum, p) => sum + p.quantity, 0);
+            const lowStock = products.filter(p => p.quantity <= 5).length;
+            
+            // Update stats container
+            const statsContainer = document.getElementById('statsContainer');
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <h3>Total des produits</h3>
+                    <div class="stat-value">${totalProducts}</div>
+                    <div class="stat-details">Articles différents en stock</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Valeur totale</h3>
+                    <div class="stat-value">${totalValue.toFixed(2)} Da</div>
+                    <div class="stat-details">Valeur de l'inventaire</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Quantité totale</h3>
+                    <div class="stat-value">${totalQuantity}</div>
+                    <div class="stat-details">Articles en stock</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Stock faible</h3>
+                    <div class="stat-value">${lowStock}</div>
+                    <div class="stat-details">Produits avec quantité ≤ 5</div>
+                </div>
+            `;
+            
+            // Update brand statistics
+            const brandStats = document.getElementById('brandStats');
+            
+            if (products.length === 0) {
+                brandStats.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>Aucune statistique</h3>
+                        <p>Ajoutez des produits pour voir les statistiques</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const brands = [...new Set(products.map(p => p.brand))];
+            
+            let brandStatsHTML = '';
+            brands.forEach(brand => {
+                const brandProducts = products.filter(p => p.brand === brand);
+                const brandCount = brandProducts.length;
+                const brandQuantity = brandProducts.reduce((sum, p) => sum + p.quantity, 0);
+                const brandValue = brandProducts.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+                
+                brandStatsHTML += `
+                    <div class="brand-card">
+                        <div class="brand-header">
+                            <div class="brand-name">${brand}</div>
+                            <div class="brand-count">${brandCount} produits</div>
+                        </div>
+                        <div class="stat-details">
+                            <div><strong>Quantité totale:</strong> ${brandQuantity} articles</div>
+                            <div><strong>Valeur totale:</strong> ${brandValue.toFixed(2)} Da</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            brandStats.innerHTML = brandStatsHTML;
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'flex';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
