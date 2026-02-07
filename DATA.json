@@ -1,4 +1,13 @@
 [
-  {"id": 1, "ref": "ELEC-001", ...},
-  {"id": 2, "ref": "ELEC-002", ...}
+  {
+    "id": 1,
+    "ref": "123",
+    "name": "goku san",
+    "brand": "son",
+    "category": "db",
+    "quantity": 159,
+    "price": 7,
+    "description": "fhwdjdwkk",
+    "highlighted": false
+  }
 ]
