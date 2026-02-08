@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panneau de contrôle - Inventaire électrique</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="https://yacine2007.github.io/abdel-kader/logo.png" type="image/png">
     <style>
         :root {
             --primary: #1a73e8;
@@ -752,6 +753,10 @@
             background-color: var(--danger);
         }
 
+        .notification.warning {
+            background-color: var(--warning);
+        }
+
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -951,10 +956,10 @@
                 <i class="fas fa-bars"></i>
             </button>
             <div class="mobile-logo-container">
-                <img src="https://yacne.github.io/abdel-kader/logo.png" alt="Logo" class="mobile-logo">
+                <img src="https://yacine2007.github.io/abdel-kader/logo.png" alt="Logo" class="mobile-logo">
                 <div class="mobile-header-text">
                     <h1>Panneau de contrôle</h1>
-                    <p>Abdel kader Ben mokrane</p>
+                    <p>Inventaire Électrique</p>
                 </div>
             </div>
         </div>
@@ -966,10 +971,10 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <img src="https://yacne.github.io/abdel-kader/logo.png" alt="Logo" class="logo">
+            <img src="https://yacine2007.github.io/abdel-kader/logo.png" alt="Logo" class="logo">
             <div class="header-text">
                 <h1>Panneau de contrôle</h1>
-                <p>Abdel kader Ben mokrane</p>
+                <p>Inventaire Électrique</p>
             </div>
         </div>
         <div class="sidebar-menu">
@@ -1235,15 +1240,13 @@
     <div class="notification" id="notification" style="display: none;"></div>
 
     <script>
-        // Configuration GitHub
-        const GITHUB_OWNER = 'Yacine2007';
-        const GITHUB_REPO = 'abdel-kader';
-        const GITHUB_PATH = 'DATA.json';
-        const GITHUB_TOKEN = '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';
+        // Configuration - JSONbin.io
+        const JSONBIN_BIN_ID = '698822faae596e708f19d92f';
+        const JSONBIN_API_KEY = '$2a$10$UEelTZoucKKk3JphVM5PbeggiUNOVkmEDDZtAOA8mNRJZXYCIbiEe';
         
-        // URL GitHub
-        const GITHUB_RAW_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${GITHUB_PATH}`;
-        const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
+        // URLs
+        const JSONBIN_GET_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`;
+        const JSONBIN_PUT_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
         
         // Products array
         let products = [];
@@ -1272,8 +1275,8 @@
             // Initialize filters toggle for mobile
             initFiltersToggle();
             
-            // Load data from GitHub
-            loadDataFromGitHub();
+            // Load data
+            loadData();
         });
 
         // Initialize mobile menu
@@ -1368,93 +1371,81 @@
             });
         }
 
-        // Load data from GitHub
-        async function loadDataFromGitHub() {
-            try {
-                console.log('Chargement des données depuis GitHub...');
-                
-                // Show loading state
-                document.getElementById('emptyTable').innerHTML = `
-                    <i class="fas fa-sync fa-spin"></i>
-                    <h3>Chargement en cours...</h3>
-                    <p>Connexion à GitHub...</p>
+        // Load data from multiple sources
+        async function loadData() {
+            console.log('Chargement des données...');
+            
+            // Show loading state
+            document.getElementById('emptyTable').innerHTML = `
+                <div class="loading">
                     <div class="loading-spinner"></div>
-                `;
-                
-                // Try direct fetch first
-                try {
-                    const response = await fetch(GITHUB_RAW_URL + '?t=' + Date.now());
-                    
-                    if (response.ok) {
-                        const text = await response.text();
-                        
-                        if (text.trim() === '') {
-                            console.log('Fichier vide détecté');
-                            products = [];
-                        } else {
-                            try {
-                                products = JSON.parse(text);
-                                console.log(`${products.length} produits chargés`);
-                            } catch (parseError) {
-                                console.error('Erreur de parsing JSON:', parseError);
-                                products = [];
-                            }
-                        }
-                        
-                        updateUIAfterLoad();
-                        return;
-                    }
-                } catch (error) {
-                    console.warn('Méthode directe échouée:', error.message);
-                }
-                
-                // Try GitHub API as fallback
-                try {
-                    const response = await fetch(GITHUB_API_URL, {
-                        headers: {
-                            'Authorization': `token ${GITHUB_TOKEN}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const fileData = await response.json();
-                        const content = atob(fileData.content);
-                        products = JSON.parse(content);
-                        console.log(`${products.length} produits chargés via API`);
-                        
-                        updateUIAfterLoad();
-                        return;
-                    }
-                } catch (error) {
-                    console.warn('API GitHub échouée:', error.message);
-                }
-                
-                // If all methods failed, create empty array
-                console.log('Création d\'un tableau vide');
-                products = [];
-                updateUIAfterLoad();
-                
+                    <p>Chargement des données...</p>
+                </div>
+            `;
+            
+            try {
+                // Try JSONbin.io first
+                await loadFromJsonBin();
             } catch (error) {
-                console.error('Erreur fatale:', error);
-                
-                // Show error state
-                document.getElementById('emptyTable').innerHTML = `
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <h3>Erreur de connexion</h3>
-                    <p>Impossible de charger les données</p>
-                    <div style="margin-top: 20px;">
-                        <button class="btn btn-primary" id="retryLoad">
-                            <i class="fas fa-redo"></i>
-                            Réessayer
-                        </button>
-                    </div>
-                `;
-                
-                document.getElementById('retryLoad').addEventListener('click', loadDataFromGitHub);
-                
-                showNotification('Erreur de chargement', 'error');
+                console.log('JSONbin.io failed:', error);
+                // Fallback to localStorage
+                await loadFromLocalStorage();
             }
+        }
+
+        // Load from JSONbin.io
+        async function loadFromJsonBin() {
+            console.log('Tentative de chargement depuis JSONbin.io...');
+            
+            const response = await fetch(JSONBIN_GET_URL, {
+                headers: {
+                    'X-Master-Key': JSONBIN_API_KEY,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            products = data.record || [];
+            
+            // Validate products array
+            if (!Array.isArray(products)) {
+                console.warn('Données non valides, réinitialisation...');
+                products = [];
+            }
+            
+            console.log(`${products.length} produits chargés depuis JSONbin.io`);
+            updateUIAfterLoad();
+        }
+
+        // Load from localStorage
+        async function loadFromLocalStorage() {
+            console.log('Chargement depuis localStorage...');
+            
+            try {
+                const localData = localStorage.getItem('inventory_products');
+                if (localData) {
+                    products = JSON.parse(localData);
+                    if (!Array.isArray(products)) {
+                        products = [];
+                    }
+                    console.log(`${products.length} produits chargés depuis localStorage`);
+                } else {
+                    products = [];
+                    console.log('Aucune donnée locale trouvée');
+                }
+            } catch (error) {
+                console.error('Erreur localStorage:', error);
+                products = [];
+            }
+            
+            updateUIAfterLoad();
+            
+            // Show offline message
+            showNotification('Mode hors ligne - Données locales', 'warning');
         }
 
         // Update UI after loading data
@@ -1476,67 +1467,41 @@
             }
         }
 
-        // Save data to GitHub
-        async function saveDataToGitHub() {
+        // Save data
+        async function saveData() {
             try {
                 showNotification('Sauvegarde en cours...', 'success');
                 
-                // Get current file SHA
-                let sha = null;
-                try {
-                    const getResponse = await fetch(GITHUB_API_URL, {
-                        headers: {
-                            'Authorization': `token ${GITHUB_TOKEN}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
-                    });
-                    
-                    if (getResponse.ok) {
-                        const fileData = await getResponse.json();
-                        sha = fileData.sha;
-                    }
-                } catch (error) {
-                    console.log('Nouveau fichier');
-                }
+                // First save to localStorage (immediate feedback)
+                localStorage.setItem('inventory_products', JSON.stringify(products));
                 
-                // Prepare content
-                const content = JSON.stringify(products, null, 2);
-                const contentEncoded = btoa(unescape(encodeURIComponent(content)));
-                
-                // Create request body
-                const body = {
-                    message: `Mise à jour - ${new Date().toLocaleString()}`,
-                    content: contentEncoded
-                };
-                
-                if (sha) {
-                    body.sha = sha;
-                }
-                
-                // Save to GitHub
-                const response = await fetch(GITHUB_API_URL, {
+                // Then try to save to JSONbin.io
+                const response = await fetch(JSONBIN_PUT_URL, {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
+                        'X-Master-Key': JSONBIN_API_KEY,
+                        'Content-Type': 'application/json',
+                        'X-Bin-Versioning': 'false'
                     },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify(products)
                 });
                 
                 if (response.ok) {
-                    showNotification('Données sauvegardées!', 'success');
+                    console.log('Données sauvegardées sur JSONbin.io');
+                    showNotification('Données sauvegardées en ligne!', 'success');
                     return true;
                 } else {
-                    const errorData = await response.json();
-                    console.error('Erreur GitHub:', errorData);
-                    showNotification('Erreur de sauvegarde', 'error');
-                    return false;
+                    console.warn('Sauvegarde locale uniquement');
+                    showNotification('Sauvegardé localement (hors ligne)', 'warning');
+                    return true;
                 }
+                
             } catch (error) {
                 console.error('Erreur de sauvegarde:', error);
-                showNotification('Erreur de sauvegarde', 'error');
-                return false;
+                // Still save locally
+                localStorage.setItem('inventory_products', JSON.stringify(products));
+                showNotification('Sauvegardé localement', 'warning');
+                return true;
             }
         }
 
@@ -1619,10 +1584,10 @@
             // Filter products
             const filteredProducts = products.filter(product => {
                 const matchesSearch = !currentFilters.search || 
-                    product.ref.toLowerCase().includes(currentFilters.search) ||
-                    product.name.toLowerCase().includes(currentFilters.search) ||
-                    product.brand.toLowerCase().includes(currentFilters.search) ||
-                    product.category.toLowerCase().includes(currentFilters.search);
+                    (product.ref && product.ref.toLowerCase().includes(currentFilters.search)) ||
+                    (product.name && product.name.toLowerCase().includes(currentFilters.search)) ||
+                    (product.brand && product.brand.toLowerCase().includes(currentFilters.search)) ||
+                    (product.category && product.category.toLowerCase().includes(currentFilters.search));
                 
                 const matchesRef = !currentFilters.ref || product.ref === currentFilters.ref;
                 const matchesBrand = !currentFilters.brand || product.brand === currentFilters.brand;
@@ -1656,11 +1621,19 @@
                     row.classList.add('highlighted');
                 }
                 
+                // Ensure all properties exist
+                const safeRef = product.ref || '';
+                const safeName = product.name || '';
+                const safeBrand = product.brand || '';
+                const safeCategory = product.category || '';
+                const safeQuantity = product.quantity || 0;
+                const safePrice = product.price || 0;
+                
                 // Highlight search matches
-                const refHTML = highlightText(product.ref, currentFilters.search);
-                const nameHTML = highlightText(product.name, currentFilters.search);
-                const brandHTML = highlightText(product.brand, currentFilters.search);
-                const categoryHTML = highlightText(product.category, currentFilters.search);
+                const refHTML = highlightText(safeRef, currentFilters.search);
+                const nameHTML = highlightText(safeName, currentFilters.search);
+                const brandHTML = highlightText(safeBrand, currentFilters.search);
+                const categoryHTML = highlightText(safeCategory, currentFilters.search);
                 
                 // Determine button text based on screen size
                 const showButtonText = window.innerWidth > 768;
@@ -1670,8 +1643,8 @@
                     <td>${nameHTML}</td>
                     <td>${brandHTML}</td>
                     <td>${categoryHTML}</td>
-                    <td>${product.quantity}</td>
-                    <td class="price">${product.price.toFixed(2)} Da</td>
+                    <td>${safeQuantity}</td>
+                    <td class="price">${parseFloat(safePrice).toFixed(2)} Da</td>
                     <td>
                         <div class="actions">
                             <button class="action-btn edit-btn" data-id="${product.id}" title="Modifier">
@@ -1750,12 +1723,12 @@
         // Copy product information as text
         function copyProductInfo(product) {
             const text = `📋 FICHE PRODUIT 📋
-Référence: ${product.ref}
-Nom: ${product.name}
-Marque: ${product.brand}
-Catégorie: ${product.category}
-Quantité: ${product.quantity}
-Prix: ${product.price.toFixed(2)} Da
+Référence: ${product.ref || ''}
+Nom: ${product.name || ''}
+Marque: ${product.brand || ''}
+Catégorie: ${product.category || ''}
+Quantité: ${product.quantity || 0}
+Prix: ${parseFloat(product.price || 0).toFixed(2)} Da
 ${product.description ? `Description: ${product.description}` : ''}
 ─────────────────────`;
             
@@ -1872,22 +1845,38 @@ ${product.description ? `Description: ${product.description}` : ''}
         // Add new product
         async function addProduct() {
             const form = document.getElementById('addProductForm');
+            
+            // Get form values
+            const ref = document.getElementById('addRef').value.trim();
+            const name = document.getElementById('addName').value.trim();
+            const brand = document.getElementById('addBrand').value.trim();
+            const category = document.getElementById('addCategory').value.trim();
+            const quantity = parseInt(document.getElementById('addQuantity').value) || 0;
+            const price = parseFloat(document.getElementById('addPrice').value) || 0;
+            const description = document.getElementById('addDescription').value.trim();
+            
+            // Validate required fields
+            if (!ref || !name || !brand || !category) {
+                showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+                return;
+            }
+            
             const newProduct = {
                 id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
-                ref: document.getElementById('addRef').value,
-                name: document.getElementById('addName').value,
-                brand: document.getElementById('addBrand').value,
-                category: document.getElementById('addCategory').value,
-                quantity: parseInt(document.getElementById('addQuantity').value),
-                price: parseFloat(document.getElementById('addPrice').value),
-                description: document.getElementById('addDescription').value,
+                ref: ref,
+                name: name,
+                brand: brand,
+                category: category,
+                quantity: quantity,
+                price: price,
+                description: description,
                 highlighted: false
             };
 
             products.push(newProduct);
             
-            // Save to GitHub
-            const success = await saveDataToGitHub();
+            // Save data
+            const success = await saveData();
             
             if (success) {
                 // Reset form
@@ -1910,13 +1899,13 @@ ${product.description ? `Description: ${product.description}` : ''}
         // Load product for editing
         function loadProductForEdit(product) {
             document.getElementById('editId').value = product.id;
-            document.getElementById('editRef').value = product.ref;
-            document.getElementById('editName').value = product.name;
-            document.getElementById('editBrand').value = product.brand;
-            document.getElementById('editCategory').value = product.category;
-            document.getElementById('editQuantity').value = product.quantity;
-            document.getElementById('editPrice').value = product.price;
-            document.getElementById('editDescription').value = product.description;
+            document.getElementById('editRef').value = product.ref || '';
+            document.getElementById('editName').value = product.name || '';
+            document.getElementById('editBrand').value = product.brand || '';
+            document.getElementById('editCategory').value = product.category || '';
+            document.getElementById('editQuantity').value = product.quantity || 0;
+            document.getElementById('editPrice').value = product.price || 0;
+            document.getElementById('editDescription').value = product.description || '';
             
             // Show edit form and hide empty state
             document.getElementById('emptyEditState').style.display = 'none';
@@ -1935,20 +1924,35 @@ ${product.description ? `Description: ${product.description}` : ''}
                 const oldProduct = {...products[productIndex]};
                 const oldHighlighted = products[productIndex].highlighted || false;
                 
+                // Get form values
+                const ref = document.getElementById('editRef').value.trim();
+                const name = document.getElementById('editName').value.trim();
+                const brand = document.getElementById('editBrand').value.trim();
+                const category = document.getElementById('editCategory').value.trim();
+                const quantity = parseInt(document.getElementById('editQuantity').value) || 0;
+                const price = parseFloat(document.getElementById('editPrice').value) || 0;
+                const description = document.getElementById('editDescription').value.trim();
+                
+                // Validate required fields
+                if (!ref || !name || !brand || !category) {
+                    showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+                    return;
+                }
+                
                 products[productIndex] = {
                     id: id,
-                    ref: document.getElementById('editRef').value,
-                    name: document.getElementById('editName').value,
-                    brand: document.getElementById('editBrand').value,
-                    category: document.getElementById('editCategory').value,
-                    quantity: parseInt(document.getElementById('editQuantity').value),
-                    price: parseFloat(document.getElementById('editPrice').value),
-                    description: document.getElementById('editDescription').value,
+                    ref: ref,
+                    name: name,
+                    brand: brand,
+                    category: category,
+                    quantity: quantity,
+                    price: price,
+                    description: description,
                     highlighted: oldHighlighted
                 };
                 
-                // Save to GitHub
-                const success = await saveDataToGitHub();
+                // Save data
+                const success = await saveData();
                 
                 if (success) {
                     // Update UI
@@ -1974,8 +1978,8 @@ ${product.description ? `Description: ${product.description}` : ''}
             const deletedProduct = products[productIndex];
             products = products.filter(p => p.id !== id);
             
-            // Save to GitHub
-            const success = await saveDataToGitHub();
+            // Save data
+            const success = await saveData();
             
             if (success) {
                 populateFilters();
@@ -1997,8 +2001,8 @@ ${product.description ? `Description: ${product.description}` : ''}
                 const oldHighlighted = product.highlighted;
                 product.highlighted = !product.highlighted;
                 
-                // Save to GitHub
-                const success = await saveDataToGitHub();
+                // Save data
+                const success = await saveData();
                 
                 if (success) {
                     applyFilters();
@@ -2017,9 +2021,9 @@ ${product.description ? `Description: ${product.description}` : ''}
         function updateStatistics() {
             // Calculate statistics
             const totalProducts = products.length;
-            const totalValue = products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
-            const totalQuantity = products.reduce((sum, p) => sum + p.quantity, 0);
-            const lowStock = products.filter(p => p.quantity <= 5).length;
+            const totalValue = products.reduce((sum, p) => sum + ((p.price || 0) * (p.quantity || 0)), 0);
+            const totalQuantity = products.reduce((sum, p) => sum + (p.quantity || 0), 0);
+            const lowStock = products.filter(p => (p.quantity || 0) <= 5).length;
             
             // Update stats container
             const statsContainer = document.getElementById('statsContainer');
@@ -2060,23 +2064,23 @@ ${product.description ? `Description: ${product.description}` : ''}
                 return;
             }
             
-            const brands = [...new Set(products.map(p => p.brand))];
+            const brands = [...new Set(products.map(p => p.brand).filter(b => b))];
             
             let brandStatsHTML = '';
             brands.forEach(brand => {
                 const brandProducts = products.filter(p => p.brand === brand);
                 const brandCount = brandProducts.length;
-                const brandQuantity = brandProducts.reduce((sum, p) => sum + p.quantity, 0);
-                const brandValue = brandProducts.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+                const brandQuantity = brandProducts.reduce((sum, p) => sum + (p.quantity || 0), 0);
+                const brandValue = brandProducts.reduce((sum, p) => sum + ((p.price || 0) * (p.quantity || 0)), 0);
                 
                 brandStatsHTML += `
                     <div class="brand-card">
                         <div class="brand-header">
                             <div class="brand-name">${brand}</div>
-                            <div class="brand-count">${brandCount} produits</div>
+                            <div class="brand-count">${brandCount} produit${brandCount > 1 ? 's' : ''}</div>
                         </div>
                         <div class="stat-details">
-                            <div><strong>Quantité totale:</strong> ${brandQuantity} articles</div>
+                            <div><strong>Quantité totale:</strong> ${brandQuantity} article${brandQuantity > 1 ? 's' : ''}</div>
                             <div><strong>Valeur totale:</strong> ${brandValue.toFixed(2)} Da</div>
                         </div>
                     </div>
